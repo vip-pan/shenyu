@@ -45,7 +45,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -96,26 +95,36 @@ public class PullSwaggerDocServiceImpl implements PullSwaggerDocService {
         }
         TagDO.TagExt tagExt = tagVO.getTagExt();
         long newRefreshTime = System.currentTimeMillis();
-        String url = getSwaggerRequestUrl(instance);
-        try (Response response = HTTP_UTILS.requestForResponse(url, Collections.emptyMap(), Collections.emptyMap(), HttpUtils.HTTPMethod.GET)) {
-            if (response.code() == HttpStatus.SC_NOT_FOUND) {
-                LOG.warn("add api document not found. clusterName={} url={}", instance.getClusterName(), url);
-                return;
-            }
-            if (response.code() != HttpStatus.SC_OK) {
-                throw new IOException(response.toString());
-            }
-            final String body = HttpUtils.readLimitedResponseBody(response.body(), maxSwaggerBodySize);
-            docManager.addDocInfo(
-                instance,
-                body,
-                tagExt.getApiDocMd5(),
-                callback -> {
-                    LOG.info("save api document successful，clusterName={}, ipPort={}", instance.getClusterName(), instance.getIp() + ":" + instance.getPort());
-                    tagExt.setApiDocMd5(callback.getDocMd5());
+        String url = getSwaggerRequestUrl(instance, "");
+        String fallbackUrl = getSwaggerRequestUrl(instance, instance.getContextPath());
+        try {
+            while (true) {
+                try (Response response = HTTP_UTILS.requestForResponse(url, Collections.emptyMap(), Collections.emptyMap(), HttpUtils.HTTPMethod.GET)) {
+                    if (response.code() == HttpStatus.SC_NOT_FOUND) {
+                        if (!url.equals(fallbackUrl)) {
+                            url = fallbackUrl;
+                            continue;
+                        }
+                        LOG.warn("add api document not found. clusterName={} url={}", instance.getClusterName(), url);
+                        return;
+                    }
+                    if (response.code() != HttpStatus.SC_OK) {
+                        throw new IOException(response.toString());
+                    }
+                    final String body = HttpUtils.readLimitedResponseBody(response.body(), maxSwaggerBodySize);
+                    docManager.addDocInfo(
+                        instance,
+                        body,
+                        tagExt.getApiDocMd5(),
+                        callback -> {
+                            LOG.info("save api document successful，clusterName={}, ipPort={}", instance.getClusterName(), instance.getIp() + ":" + instance.getPort());
+                            tagExt.setApiDocMd5(callback.getDocMd5());
+                        }
+                    );
+                    tagExt.setRefreshTime(newRefreshTime);
+                    return;
                 }
-            );
-            tagExt.setRefreshTime(newRefreshTime);
+            }
         } catch (Exception e) {
             LOG.error("add api document fail. clusterName={} url={} error", instance.getClusterName(), url, e);
         } finally {
@@ -190,12 +199,15 @@ public class PullSwaggerDocServiceImpl implements PullSwaggerDocService {
         return StringUtils.isNotEmpty(ext) ? GsonUtils.getInstance().fromJson(ext, TagDO.TagExt.class) : new TagDO.TagExt();
     }
 
-    private String getSwaggerRequestUrl(final UpstreamInstance instance) {
+    private String getSwaggerRequestUrl(final UpstreamInstance instance, final String contextPath) {
         UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.newInstance();
         uriComponentsBuilder.scheme("http");
         uriComponentsBuilder.host(instance.getIp());
         uriComponentsBuilder.port(instance.getPort());
-        uriComponentsBuilder.path(Optional.ofNullable(instance.getContextPath()).orElse(""));
+        // The registered context path may only be a gateway prefix, not a backend servlet path.
+        if (StringUtils.isNotBlank(contextPath) && !"/".equals(contextPath)) {
+            uriComponentsBuilder.path("/" + StringUtils.strip(contextPath, "/"));
+        }
         uriComponentsBuilder.path(SWAGGER_V3_PATH);
         return uriComponentsBuilder.build().toUriString();
     }
