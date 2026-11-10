@@ -17,6 +17,7 @@
 
 package org.apache.shenyu.plugin.grpc.loadbalance.picker;
 
+import io.grpc.CallOptions;
 import io.grpc.LoadBalancer;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -30,6 +31,7 @@ import org.apache.shenyu.plugin.grpc.context.GrpcConstants;
 import org.apache.shenyu.plugin.grpc.loadbalance.SubChannelCopy;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -45,23 +47,26 @@ public class ShenyuPicker extends AbstractReadyPicker {
     }
 
     @Override
-    protected SubChannelCopy pick(final List<SubChannelCopy> list) {
-        String grpcRuleId = GrpcConstants.GRPC_RULE_ID.get();
-        String selectorId = GrpcConstants.GRPC_SELECTOR_ID.get();
-        String remoteAddressIp = GrpcConstants.GRPC_REMOTE_ADDRESS.get();
-        final GrpcRuleHandle cacheRuleHandle = ApplicationConfigCache.getInstance().getCacheRuleHandle(grpcRuleId);
-        List<GrpcUpstream> grpcUpstreams = ApplicationConfigCache.getInstance().getGrpcUpstreamListCache(selectorId);
-        if (CollectionUtils.isNotEmpty(grpcUpstreams)) {
-            LoadBalanceData data = new LoadBalanceData();
-            data.setIp(remoteAddressIp);
-            Upstream upstream = LoadBalancerFactory.selector(convertUpstreamList(grpcUpstreams), cacheRuleHandle.getLoadBalance(), data);
-            if (StringUtils.isBlank(upstream.getUrl()) && StringUtils.isBlank(upstream.getGroup()) && StringUtils.isBlank(upstream.getVersion())) {
-                return randomPicker.pick(list);
-            }
-            final List<SubChannelCopy> invokerGrays = list.stream().filter(each -> each.getUrl().equals(upstream.getUrl())).toList();
-            return invokerGrays.stream().findFirst().orElse(null);
+    protected SubChannelCopy pick(final List<SubChannelCopy> list, final CallOptions callOptions) {
+        String grpcRuleId = callOptions.getOption(GrpcConstants.GRPC_RULE_ID);
+        String selectorId = callOptions.getOption(GrpcConstants.GRPC_SELECTOR_ID);
+        String remoteAddressIp = callOptions.getOption(GrpcConstants.GRPC_REMOTE_ADDRESS);
+        final GrpcRuleHandle cacheRuleHandle = Objects.isNull(grpcRuleId) ? null
+                : ApplicationConfigCache.getInstance().getCacheRuleHandle(grpcRuleId);
+        List<GrpcUpstream> grpcUpstreams = Objects.isNull(selectorId) ? null
+                : ApplicationConfigCache.getInstance().getGrpcUpstreamListCache(selectorId);
+        if (Objects.isNull(cacheRuleHandle) || CollectionUtils.isEmpty(grpcUpstreams)) {
+            // Picks for calls without plugin options, or before the rule handle is cached, fall back to random.
+            return randomPicker.pick(list, callOptions);
         }
-        return randomPicker.pick(list);
+        LoadBalanceData data = new LoadBalanceData();
+        data.setIp(remoteAddressIp);
+        Upstream upstream = LoadBalancerFactory.selector(convertUpstreamList(grpcUpstreams), cacheRuleHandle.getLoadBalance(), data);
+        if (StringUtils.isBlank(upstream.getUrl()) && StringUtils.isBlank(upstream.getGroup()) && StringUtils.isBlank(upstream.getVersion())) {
+            return randomPicker.pick(list, callOptions);
+        }
+        final List<SubChannelCopy> invokerGrays = list.stream().filter(each -> each.getUrl().equals(upstream.getUrl())).toList();
+        return invokerGrays.stream().findFirst().orElse(null);
     }
 
     private List<Upstream> convertUpstreamList(final List<GrpcUpstream> grpcUpstreams) {

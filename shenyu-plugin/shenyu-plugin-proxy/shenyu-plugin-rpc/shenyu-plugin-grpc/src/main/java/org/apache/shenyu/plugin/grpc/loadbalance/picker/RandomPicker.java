@@ -17,6 +17,7 @@
 
 package org.apache.shenyu.plugin.grpc.loadbalance.picker;
 
+import io.grpc.CallOptions;
 import io.grpc.LoadBalancer;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.shenyu.plugin.grpc.loadbalance.SubChannelCopy;
@@ -34,7 +35,7 @@ public class RandomPicker extends AbstractReadyPicker {
     }
 
     @Override
-    protected SubChannelCopy pick(final List<SubChannelCopy> list) {
+    protected SubChannelCopy pick(final List<SubChannelCopy> list, final CallOptions callOptions) {
         if (CollectionUtils.isEmpty(list)) {
             return null;
         }

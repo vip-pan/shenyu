@@ -18,6 +18,7 @@
 package org.apache.shenyu.plugin.grpc.loadbalance.picker;
 
 import io.grpc.Attributes;
+import io.grpc.CallOptions;
 import io.grpc.EquivalentAddressGroup;
 import io.grpc.LoadBalancer;
 import org.apache.shenyu.plugin.grpc.loadbalance.SubChannelCopy;
@@ -59,7 +60,7 @@ public class RandomPickerTest {
 
     @Test
     public void testPickSubchannel() {
-        assertNotNull(randomPicker.pickSubchannel(null));
+        assertNotNull(randomPicker.pickSubchannel(mock(LoadBalancer.PickSubchannelArgs.class)));
     }
 
     @Test
@@ -78,9 +79,9 @@ public class RandomPickerTest {
         SubChannelCopy secondSubChannelCopy = mock(SubChannelCopy.class);
         when(secondSubChannelCopy.getWeight()).thenReturn(10);
         List<SubChannelCopy> list = Arrays.asList(firstSubChannelCopy, secondSubChannelCopy);
-        assertNotNull(randomPicker.pick(list));
-        assertEquals(firstSubChannelCopy, randomPicker.pick(Collections.singletonList(firstSubChannelCopy)));
-        assertEquals(firstSubChannelCopy, randomPicker.pick(Arrays.asList(firstSubChannelCopy, firstSubChannelCopy)));
-        assertNull(randomPicker.pick(null));
+        assertNotNull(randomPicker.pick(list, CallOptions.DEFAULT));
+        assertEquals(firstSubChannelCopy, randomPicker.pick(Collections.singletonList(firstSubChannelCopy), CallOptions.DEFAULT));
+        assertEquals(firstSubChannelCopy, randomPicker.pick(Arrays.asList(firstSubChannelCopy, firstSubChannelCopy), CallOptions.DEFAULT));
+        assertNull(randomPicker.pick(null, CallOptions.DEFAULT));
     }
 }

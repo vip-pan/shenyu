@@ -17,6 +17,7 @@
 
 package org.apache.shenyu.plugin.grpc.loadbalance.picker;
 
+import io.grpc.CallOptions;
 import io.grpc.ConnectivityState;
 import io.grpc.LoadBalancer;
 import io.grpc.Status;
@@ -54,7 +55,7 @@ public abstract class AbstractReadyPicker extends AbstractPicker implements Pick
         if (CollectionUtils.isEmpty(list)) {
             return getErrorPickResult();
         }
-        SubChannelCopy channel = pick(list);
+        SubChannelCopy channel = pick(list, args.getCallOptions());
         return Objects.isNull(channel) ? getErrorPickResult() : LoadBalancer.PickResult.withSubchannel(channel.getChannel());
     }
 
@@ -62,9 +63,10 @@ public abstract class AbstractReadyPicker extends AbstractPicker implements Pick
      * Choose subChannel.
      *
      * @param list subChannel list
+     * @param callOptions the call options of the call requesting the pick
      * @return result subChannel
      */
-    protected abstract SubChannelCopy pick(List<SubChannelCopy> list);
+    protected abstract SubChannelCopy pick(List<SubChannelCopy> list, CallOptions callOptions);
 
     @Override
     public List<SubChannelCopy> getSubchannels() {
