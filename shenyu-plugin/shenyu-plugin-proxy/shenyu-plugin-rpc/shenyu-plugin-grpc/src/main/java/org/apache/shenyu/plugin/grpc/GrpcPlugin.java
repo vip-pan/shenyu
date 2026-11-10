@@ -95,17 +95,17 @@ public class GrpcPlugin extends AbstractShenyuPlugin {
             Object error = ShenyuResultWrap.error(exchange, ShenyuResultEnum.GRPC_CLIENT_NULL);
             return WebFluxResultUtils.result(exchange, error);
         }
-        // load balance context
-        Context.current().withValue(GrpcConstants.GRPC_SELECTOR_ID, selector.getId()).attach();
-        Context.current().withValue(GrpcConstants.GRPC_RULE_ID, rule.getId()).attach();
-        Context.current().withValue(GrpcConstants.GRPC_REMOTE_ADDRESS,
-                Optional.ofNullable(exchange.getRequest().getRemoteAddress())
-                        .map(InetSocketAddress::getAddress)
-                        .map(InetAddress::getHostAddress)
-                        .orElse(StringUtils.EMPTY)).attach();
-
+        // Load-balance context rides on the call options: a delayed pick runs on a gRPC
+        // transport thread after the channel becomes ready, where thread-local Context is absent.
         GrpcExtInfo extInfo = ApplicationConfigCache.getInstance().obtainGrpcExtInfo(metaData);
-        CallOptions callOptions = CallOptions.DEFAULT.withDeadlineAfter(extInfo.getTimeout(), TimeUnit.MILLISECONDS);
+        CallOptions callOptions = CallOptions.DEFAULT.withDeadlineAfter(extInfo.getTimeout(), TimeUnit.MILLISECONDS)
+                .withOption(GrpcConstants.GRPC_SELECTOR_ID, StringUtils.defaultString(selector.getId()))
+                .withOption(GrpcConstants.GRPC_RULE_ID, StringUtils.defaultString(rule.getId()))
+                .withOption(GrpcConstants.GRPC_REMOTE_ADDRESS,
+                        Optional.ofNullable(exchange.getRequest().getRemoteAddress())
+                                .map(InetSocketAddress::getAddress)
+                                .map(InetAddress::getHostAddress)
+                                .orElse(StringUtils.EMPTY));
         Map<String, Map<String, String>> rpcContext = exchange.getAttribute(Constants.GENERAL_CONTEXT);
         Optional.ofNullable(rpcContext).map(context -> context.get(PluginEnum.GRPC.getName())).ifPresent(
             context -> Context.current().withValue(RPC_CONTEXT_KEY, context).attach());

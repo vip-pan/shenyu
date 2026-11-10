@@ -18,6 +18,7 @@
 package org.apache.shenyu.plugin.grpc.loadbalance.picker;
 
 import io.grpc.Attributes;
+import io.grpc.CallOptions;
 import io.grpc.EquivalentAddressGroup;
 import io.grpc.LoadBalancer;
 import org.apache.shenyu.plugin.grpc.loadbalance.SubChannelCopy;
@@ -57,9 +58,9 @@ public class RoundRobinPickerTest {
         SubChannelCopy firstSubChannelCopy = mock(SubChannelCopy.class);
         SubChannelCopy secondSubChannelCopy = mock(SubChannelCopy.class);
         List<SubChannelCopy> list = Arrays.asList(firstSubChannelCopy, secondSubChannelCopy);
-        assertNotNull(roundRobinPicker.pick(list));
-        assertNotNull(roundRobinPicker.pick(list));
-        assertEquals(firstSubChannelCopy, roundRobinPicker.pick(Collections.singletonList(firstSubChannelCopy)));
-        assertNull(roundRobinPicker.pick(null));
+        assertNotNull(roundRobinPicker.pick(list, CallOptions.DEFAULT));
+        assertNotNull(roundRobinPicker.pick(list, CallOptions.DEFAULT));
+        assertEquals(firstSubChannelCopy, roundRobinPicker.pick(Collections.singletonList(firstSubChannelCopy), CallOptions.DEFAULT));
+        assertNull(roundRobinPicker.pick(null, CallOptions.DEFAULT));
     }
 }
