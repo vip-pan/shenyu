@@ -66,7 +66,7 @@ public final class WebSocketTimeoutMigrationTest {
     private void assertMetadata(final Statement statement) throws Exception {
         try (ResultSet rows = statement.executeQuery("SELECT label FROM plugin_handle WHERE plugin_id = '26' AND field = 'timeout'")) {
             assertTrue(rows.next());
-            assertEquals("Connection timeout (ms)", rows.getString(1));
+            assertEquals("连接超时(ms)", rows.getString(1));
         }
         try (ResultSet rows = statement.executeQuery("SELECT count(*) FROM plugin_handle WHERE plugin_id = '26' AND field = 'idleTimeout'")) {
             assertTrue(rows.next());

@@ -713,7 +713,7 @@ INSERT IGNORE INTO plugin_handle (`id`, `plugin_id`,`field`,`label`,`data_type`,
 INSERT IGNORE INTO plugin_handle (`id`, `plugin_id`,`field`,`label`,`data_type`,`type`,`sort`,`ext_obj`) VALUES ('1529402613204172829', '26', 'status', 'status', 3, 1, 6, '{"defaultValue":"true","rule":""}');
 INSERT IGNORE INTO plugin_handle (`id`, `plugin_id`,`field`,`label`,`data_type`,`type`,`sort`) VALUES ('1529402613204172830', '26', 'loadBalance', 'loadStrategy', 3, 2, 0);
 INSERT IGNORE INTO plugin_handle (`id`, `plugin_id`,`field`,`label`,`data_type`,`type`,`sort`) VALUES ('1529402613204172831', '26', 'retry', 'retryCount', 1, 2, 1);
-INSERT IGNORE INTO plugin_handle (`id`, `plugin_id`,`field`,`label`,`data_type`,`type`,`sort`,`ext_obj`) VALUES ('1529402613204172832', '26', 'timeout', 'Connection timeout (ms)', 1, 2, 2, '{"defaultValue":"3000","rule":""}');
+INSERT IGNORE INTO plugin_handle (`id`, `plugin_id`,`field`,`label`,`data_type`,`type`,`sort`,`ext_obj`) VALUES ('1529402613204172832', '26', 'timeout', '连接超时(ms)', 1, 2, 2, '{"defaultValue":"3000","rule":""}');
 INSERT IGNORE INTO plugin_handle (`id`, `plugin_id`,`field`,`label`,`data_type`,`type`,`sort`) VALUES ('1529402613204172833', '26', 'multiSelectorHandle', 'multiSelectorHandle', 3, 3, 0);
 INSERT IGNORE INTO plugin_handle (`id`, `plugin_id`,`field`,`label`,`data_type`,`type`,`sort`) VALUES ('1529402613204172839', '28', 'port', 'port', 1, 3, 1);
 INSERT IGNORE INTO plugin_handle (`id`, `plugin_id`,`field`,`label`,`data_type`,`type`,`sort`) VALUES ('1529402613204172840', '28', 'bossGroupThreadCount', 'bossGroupThreadCount', 1, 3, 1);
@@ -1691,4 +1691,4 @@ CREATE INDEX IF NOT EXISTS idx_fencing_domain_session
 
 -- WebSocket session idle timeout; timeout remains the connection/upgrade deadline.
 INSERT IGNORE INTO plugin_handle (`id`, `plugin_id`, `field`, `label`, `data_type`, `type`, `sort`, `ext_obj`)
-VALUES ('1900000000000000026', '26', 'idleTimeout', 'Idle timeout (ms, 0 disables)', 1, 2, 3, '{"required":"0","defaultValue":"0","rule":""}');
+VALUES ('1900000000000000026', '26', 'idleTimeout', '空闲超时(ms，0禁用)', 1, 2, 3, '{"required":"0","defaultValue":"0","rule":""}');

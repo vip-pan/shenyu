@@ -1023,7 +1023,7 @@ INSERT INTO `plugin_handle` VALUES ('1529402613204172828', '26', 'warmup', 'warm
 INSERT INTO `plugin_handle` VALUES ('1529402613204172829', '26', 'status', 'status', 3, 1, 6, '{\"defaultValue\":\"true\",\"rule\":\"\"}', '2022-05-25 18:02:53', '2022-05-25 18:02:53');
 INSERT INTO `plugin_handle` VALUES ('1529402613204172830', '26', 'loadBalance', 'loadStrategy', 3, 2, 0, NULL, '2022-05-25 18:02:53', '2022-05-25 18:02:53');
 INSERT INTO `plugin_handle` VALUES ('1529402613204172831', '26', 'retry', 'retryCount', 1, 2, 1, NULL, '2022-05-25 18:02:53', '2022-05-25 18:02:53');
-INSERT INTO `plugin_handle` VALUES ('1529402613204172832', '26', 'timeout', 'Connection timeout (ms)', 1, 2, 2, '{\"defaultValue\":\"3000\",\"rule\":\"\"}', '2022-05-25 18:02:53', '2022-05-25 18:02:53');
+INSERT INTO `plugin_handle` VALUES ('1529402613204172832', '26', 'timeout', '连接超时(ms)', 1, 2, 2, '{\"defaultValue\":\"3000\",\"rule\":\"\"}', '2022-05-25 18:02:53', '2022-05-25 18:02:53');
 INSERT INTO `plugin_handle` VALUES ('1529402613204172833', '26', 'multiSelectorHandle', 'multiSelectorHandle', 3, 3, 0, NULL, '2022-05-25 18:02:53', '2022-05-25 18:02:53');
 INSERT INTO `plugin_handle` VALUES ('1529402613204172839', '28', 'port', 'port', 1, 3, 1, NULL, '2022-05-25 18:02:53', '2022-05-25 18:02:53');
 INSERT INTO `plugin_handle` VALUES ('1529402613204172840', '28', 'bossGroupThreadCount', 'bossGroupThreadCount', 1, 3, 1, NULL, '2022-05-25 18:02:53', '2022-05-25 18:02:53');
@@ -2578,4 +2578,4 @@ CREATE TABLE IF NOT EXISTS `registration_fencing_target` (
 
 -- WebSocket session idle timeout; timeout remains the connection/upgrade deadline.
 INSERT IGNORE INTO plugin_handle (`id`, `plugin_id`, `field`, `label`, `data_type`, `type`, `sort`, `ext_obj`)
-VALUES ('1900000000000000026', '26', 'idleTimeout', 'Idle timeout (ms, 0 disables)', 1, 2, 3, '{"required":"0","defaultValue":"0","rule":""}');
+VALUES ('1900000000000000026', '26', 'idleTimeout', '空闲超时(ms，0禁用)', 1, 2, 3, '{"required":"0","defaultValue":"0","rule":""}');

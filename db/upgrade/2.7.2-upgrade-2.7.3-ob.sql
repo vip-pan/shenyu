@@ -92,7 +92,10 @@ INSERT INTO `shenyu_dict` (`id`, `type`, `dict_code`, `dict_name`, `dict_value`,
 VALUES ('1890000000000000003', 'backendFailurePolicy', 'BACKEND_FAILURE_POLICY_REJECT', 'REJECT', 'REJECT', 'Reject requests when the Redis backend fails', 1, 1, '2026-10-30 00:00:00', '2026-10-30 00:00:00');
 
 -- WebSocket timeout is the connection/upgrade deadline; idle timeout is opt-in.
-UPDATE plugin_handle SET `label` = 'Connection timeout (ms)' WHERE plugin_id = '26' AND `field` = 'timeout';
+UPDATE plugin_handle SET `label` = '连接超时(ms)' WHERE plugin_id = '26' AND `field` = 'timeout';
 INSERT INTO plugin_handle (`id`, `plugin_id`, `field`, `label`, `data_type`, `type`, `sort`, `ext_obj`)
-SELECT '1900000000000000026', '26', 'idleTimeout', 'Idle timeout (ms, 0 disables)', 1, 2, 3, '{"required":"0","defaultValue":"0","rule":""}'
+SELECT '1900000000000000026', '26', 'idleTimeout', '空闲超时(ms，0禁用)', 1, 2, 3, '{"required":"0","defaultValue":"0","rule":""}'
 WHERE NOT EXISTS (SELECT 1 FROM plugin_handle WHERE plugin_id = '26' AND `field` = 'idleTimeout');
+
+-- Keep existing WebSocket form labels compact when the idle field is already installed.
+UPDATE plugin_handle SET `label` = '空闲超时(ms，0禁用)' WHERE plugin_id = '26' AND `field` = 'idleTimeout';

@@ -1300,7 +1300,7 @@ insert /*+ IGNORE_ROW_ON_DUPKEY_INDEX(plugin_handle(plugin_id, field, type)) */ 
 values ('1518229897214468139', '26', 'retry', 'retryCount', 1, 2, 1, null);
 
 insert /*+ IGNORE_ROW_ON_DUPKEY_INDEX(plugin_handle(plugin_id, field, type)) */ into plugin_handle (ID, PLUGIN_ID, FIELD, LABEL, DATA_TYPE, TYPE, SORT, EXT_OBJ)
-values ('1518229897214468140', '26', 'timeout', 'Connection timeout (ms)', 1, 2, 2, '{"defaultValue":"3000","rule":""}');
+values ('1518229897214468140', '26', 'timeout', '连接超时(ms)', 1, 2, 2, '{"defaultValue":"3000","rule":""}');
 
 insert /*+ IGNORE_ROW_ON_DUPKEY_INDEX(plugin_handle(plugin_id, field, type)) */ into plugin_handle (ID, PLUGIN_ID, FIELD, LABEL, DATA_TYPE, TYPE, SORT, EXT_OBJ)
 values ('1518229897214468141', '26', 'multiSelectorHandle', 'multiSelectorHandle', 3, 3, 0, null);
@@ -3591,4 +3591,4 @@ CREATE INDEX idx_fencing_domain_session ON registration_fencing_target (domain_i
 
 -- WebSocket session idle timeout; timeout remains the connection/upgrade deadline.
 INSERT /*+ IGNORE_ROW_ON_DUPKEY_INDEX(plugin_handle(id)) */ INTO plugin_handle (id, plugin_id, field, label, data_type, type, sort, ext_obj)
-VALUES ('1900000000000000026', '26', 'idleTimeout', 'Idle timeout (ms, 0 disables)', 1, 2, 3, '{"required":"0","defaultValue":"0","rule":""}');
+VALUES ('1900000000000000026', '26', 'idleTimeout', '空闲超时(ms，0禁用)', 1, 2, 3, '{"required":"0","defaultValue":"0","rule":""}');
