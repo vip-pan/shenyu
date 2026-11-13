@@ -98,3 +98,9 @@ INSERT INTO SHENYU_DICT (ID, TYPE, DICT_CODE, DICT_NAME, DICT_VALUE, "desc", SOR
 VALUES ('1890000000000000002', 'backendFailurePolicy', 'BACKEND_FAILURE_POLICY_ALLOW', 'ALLOW', 'ALLOW', 'Allow requests when the Redis backend fails', 0, 1);
 INSERT INTO SHENYU_DICT (ID, TYPE, DICT_CODE, DICT_NAME, DICT_VALUE, "desc", SORT, ENABLED)
 VALUES ('1890000000000000003', 'backendFailurePolicy', 'BACKEND_FAILURE_POLICY_REJECT', 'REJECT', 'REJECT', 'Reject requests when the Redis backend fails', 1, 1);
+
+-- WebSocket timeout is the connection/upgrade deadline; idle timeout is opt-in.
+UPDATE plugin_handle SET label = 'Connection timeout (ms)' WHERE plugin_id = '26' AND field = 'timeout';
+INSERT INTO plugin_handle (id, plugin_id, field, label, data_type, type, sort, ext_obj)
+SELECT '1900000000000000026', '26', 'idleTimeout', 'Idle timeout (ms, 0 disables)', 1, 2, 3, '{"required":"0","defaultValue":"0","rule":""}' FROM dual
+WHERE NOT EXISTS (SELECT 1 FROM plugin_handle WHERE plugin_id = '26' AND field = 'idleTimeout');

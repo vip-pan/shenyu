@@ -23,6 +23,7 @@ import org.apache.shenyu.plugin.api.context.ShenyuContextDecorator;
 import org.apache.shenyu.plugin.base.handler.DiscoveryUpstreamDataHandler;
 import org.apache.shenyu.plugin.base.handler.PluginDataHandler;
 import org.apache.shenyu.plugin.websocket.WebSocketPlugin;
+import org.apache.shenyu.plugin.websocket.client.TimeoutWebSocketClient;
 import org.apache.shenyu.plugin.websocket.context.WebSocketShenyuContextDecorator;
 import org.apache.shenyu.plugin.websocket.handler.WebSocketPluginDataHandler;
 import org.apache.shenyu.plugin.websocket.handler.WebSocketUpstreamDataHandler;
@@ -81,7 +82,7 @@ public class WebSocketPluginConfiguration {
         Supplier<WebsocketClientSpec.Builder> builder = () -> WebsocketClientSpec.builder()
                 .maxFramePayloadLength(shenyuConfig.getWebsocket().getMaxFramePayloadSize() * Constants.BYTES_PER_MB)
                 .handlePing(shenyuConfig.getWebsocket().getEnableProxyPing());
-        return new ReactorNettyWebSocketClient(httpClient.getIfAvailable(HttpClient::create), builder);
+        return new TimeoutWebSocketClient(httpClient.getIfAvailable(HttpClient::create), builder);
     }
 
     /**

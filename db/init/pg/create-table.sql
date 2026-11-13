@@ -1068,7 +1068,7 @@ INSERT INTO "public"."plugin_handle" VALUES ('1529403902783524873', '26', 'warmu
 INSERT INTO "public"."plugin_handle" VALUES ('1529403902783524874', '26', 'status', 'status', 3, 1, 6, '{"defaultValue":"true","rule":""}', '2022-05-25 18:08:01', '2022-05-25 18:08:01');
 INSERT INTO "public"."plugin_handle" VALUES ('1529403902783524875', '26', 'loadBalance', 'loadStrategy', 3, 2, 0, NULL, '2022-05-25 18:08:01', '2022-05-25 18:08:01');
 INSERT INTO "public"."plugin_handle" VALUES ('1529403902783524876', '26', 'retry', 'retryCount', 1, 2, 1, NULL, '2022-05-25 18:08:01', '2022-05-25 18:08:01');
-INSERT INTO "public"."plugin_handle" VALUES ('1529403902783524877', '26', 'timeout', 'timeout', 1, 2, 2, '{"defaultValue":"3000","rule":""}', '2022-05-25 18:08:01', '2022-05-25 18:08:01');
+INSERT INTO "public"."plugin_handle" VALUES ('1529403902783524877', '26', 'timeout', 'Connection timeout (ms)', 1, 2, 2, '{"defaultValue":"3000","rule":""}', '2022-05-25 18:08:01', '2022-05-25 18:08:01');
 INSERT INTO "public"."plugin_handle" VALUES ('1529403902783524878', '26', 'multiSelectorHandle', 'multiSelectorHandle', 3, 3, 0, NULL, '2022-05-25 18:08:01', '2022-05-25 18:08:01');
 INSERT INTO "public"."plugin_handle" VALUES ('1529403902783524884', '28', 'port', 'port', 1, 3, 1, NULL, '2022-05-25 18:08:01', '2022-05-25 18:08:01');
 INSERT INTO "public"."plugin_handle" VALUES ('1529403902783524885', '28', 'bossGroupThreadCount', 'bossGroupThreadCount', 1, 3, 1, NULL, '2022-05-25 18:08:01', '2022-05-25 18:08:01');
@@ -3040,3 +3040,7 @@ CREATE INDEX IF NOT EXISTS idx_registration_fencing_target_address
     ON "public"."registration_fencing_target" ("namespace_id", "host", "port");
 CREATE INDEX IF NOT EXISTS idx_fencing_domain_session
     ON "public"."registration_fencing_target" ("domain_id", "session_id");
+
+-- WebSocket session idle timeout; timeout remains the connection/upgrade deadline.
+INSERT INTO plugin_handle (id, plugin_id, field, label, data_type, type, sort, ext_obj)
+VALUES ('1900000000000000026', '26', 'idleTimeout', 'Idle timeout (ms, 0 disables)', 1, 2, 3, '{"required":"0","defaultValue":"0","rule":""}') ON CONFLICT DO NOTHING;

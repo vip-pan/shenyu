@@ -405,6 +405,42 @@ public final class RuleServiceTest {
         verify(ruleMapper, never()).insertSelective(any());
     }
 
+    @Test
+    public void testWebSocketCreateRejectsNegativeIdleTimeoutBeforeWrite() {
+        mockWebSocketPlugin();
+        RuleDTO ruleDTO = buildRuleDTO("");
+        ruleDTO.setHandle("{\"timeout\":3000,\"idleTimeout\":-1}");
+        assertThrows(ShenyuAdminException.class, () -> ruleService.createOrUpdate(ruleDTO));
+        verify(ruleMapper, never()).insertSelective(any());
+        verify(ruleEventPublisher, never()).onCreated(any(), any());
+    }
+
+    @Test
+    public void testWebSocketUpdateRejectsInvalidConnectionTimeoutBeforeWrite() {
+        mockWebSocketPlugin();
+        RuleDTO ruleDTO = buildRuleDTO("123");
+        ruleDTO.setHandle("{\"timeout\":0,\"idleTimeout\":60000}");
+        assertThrows(ShenyuAdminException.class, () -> ruleService.createOrUpdate(ruleDTO));
+        verify(ruleMapper, never()).updateSelective(any());
+        verify(ruleEventPublisher, never()).onUpdated(any(), any(), any(), any());
+    }
+
+    @Test
+    public void testWebSocketImportRejectsInvalidTimeoutBeforeWrite() {
+        mockWebSocketPlugin();
+        given(ruleMapper.selectAll()).willReturn(Collections.emptyList());
+        RuleDTO ruleDTO = buildRuleDTO("");
+        ruleDTO.setHandle("{\"idleTimeout\":-1}");
+        assertThrows(ShenyuAdminException.class, () -> ruleService.importData(Collections.singletonList(ruleDTO)));
+        verify(ruleMapper, never()).insertSelective(any());
+    }
+
+    private void mockWebSocketPlugin() {
+        given(selectorMapper.selectById("456")).willReturn(buildSelectorDO());
+        given(pluginMapper.selectById("789")).willReturn(PluginDO.builder()
+                .id("789").name(PluginEnum.WEB_SOCKET.getName()).build());
+    }
+
     private void mockRewritePlugin() {
         given(selectorMapper.selectById("456")).willReturn(buildSelectorDO());
         given(pluginMapper.selectById("789")).willReturn(PluginDO.builder()

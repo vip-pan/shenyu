@@ -40,9 +40,46 @@ public class WebSocketRuleHandle implements RuleHandle {
     private int retry;
 
     /**
-     * timeout is required.
+     * Connection and upgrade deadline in milliseconds.
      */
     private long timeout = Constants.TIME_OUT;
+
+    /**
+     * Bidirectional idle timeout in milliseconds; zero disables it.
+     */
+    private long idleTimeout;
+
+    /**
+     * Get the bidirectional idle timeout.
+     *
+     * @return idle timeout in milliseconds, zero disables it
+     */
+    public long getIdleTimeout() {
+        return idleTimeout;
+    }
+
+    /**
+     * Set the bidirectional idle timeout.
+     *
+     * @param idleTimeout idle timeout in milliseconds
+     */
+    public void setIdleTimeout(final long idleTimeout) {
+        this.idleTimeout = idleTimeout;
+    }
+
+    /**
+     * Validate timeouts before storing or applying a rule.
+     *
+     * @throws IllegalArgumentException if a timeout is outside its supported range
+     */
+    public void validateTimeouts() {
+        if (getTimeout() <= 0 || getTimeout() > Integer.MAX_VALUE) {
+            throw new IllegalArgumentException("timeout (connection timeout) must be between 1 and 2147483647 milliseconds");
+        }
+        if (idleTimeout < 0 || idleTimeout > Integer.MAX_VALUE) {
+            throw new IllegalArgumentException("idleTimeout must be between 0 and 2147483647 milliseconds");
+        }
+    }
     
     /**
      * New default instance web socket rule handle.
@@ -116,12 +153,13 @@ public class WebSocketRuleHandle implements RuleHandle {
             return false;
         }
         WebSocketRuleHandle that = (WebSocketRuleHandle) o;
-        return retry == that.retry && timeout == that.timeout && Objects.equals(loadBalance, that.loadBalance);
+        return retry == that.retry && timeout == that.timeout && idleTimeout == that.idleTimeout
+                && Objects.equals(loadBalance, that.loadBalance);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(loadBalance, retry, timeout);
+        return Objects.hash(loadBalance, retry, timeout, idleTimeout);
     }
 
     @Override
@@ -134,6 +172,8 @@ public class WebSocketRuleHandle implements RuleHandle {
                 + retry
                 + ", timeout="
                 + timeout
+                + ", idleTimeout="
+                + idleTimeout
                 + '}';
     }
 }
