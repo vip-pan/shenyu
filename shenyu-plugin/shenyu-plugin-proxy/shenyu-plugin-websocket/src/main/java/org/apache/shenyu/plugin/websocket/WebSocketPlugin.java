@@ -110,7 +110,7 @@ public class WebSocketPlugin extends AbstractShenyuPlugin {
         // proxied session then runs on its own subscription. The count therefore has to be attached to the
         // handler, which is where the session actually lives, not to the handshake.
         WebSocketHandler handler = new ShenyuWebSocketHandler(wsRequestUrl, this.webSocketClient,
-                filterHeaders(headers), buildWsProtocols(headers));
+                filterHeaders(headers), buildWsProtocols(headers), ruleHandle);
         if (LoadBalanceEnum.LEAST_ACTIVITY.getName().equals(ruleHandle.getLoadBalance())) {
             handler = new InflightWebSocketHandler(handler, upstream);
         }
@@ -277,6 +277,8 @@ public class WebSocketPlugin extends AbstractShenyuPlugin {
 
         private final List<String> subProtocols;
 
+        private final WebSocketRuleHandle ruleHandle;
+
         /**
          * Instantiates a new shenyu web socket handler.
          *
@@ -284,11 +286,13 @@ public class WebSocketPlugin extends AbstractShenyuPlugin {
          * @param client    the client
          * @param headers   the headers
          * @param protocols the protocols
+         * @param ruleHandle the timeout settings for this connection
          */
         ShenyuWebSocketHandler(final URI url, final WebSocketClient client,
                                final HttpHeaders headers,
-                               final List<String> protocols) {
+                               final List<String> protocols, final WebSocketRuleHandle ruleHandle) {
             this.client = client;
+            this.ruleHandle = ruleHandle;
             this.url = url;
             this.headers = headers;
             this.subProtocols = ObjectUtils.defaultIfNull(protocols, Collections.emptyList());
@@ -309,9 +313,9 @@ public class WebSocketPlugin extends AbstractShenyuPlugin {
                 @NonNull
                 @Override
                 public Mono<Void> handle(@NonNull final WebSocketSession proxySocketSession) {
-                    Mono<Void> serverClose = proxySocketSession.closeStatus().filter(it -> session.isOpen())
+                    Mono<Void> serverClose = proxySocketSession.closeStatus().defaultIfEmpty(CloseStatus.GOING_AWAY).filter(it -> session.isOpen())
                         .map(WebSocketPlugin::adaptCloseStatus).flatMap(session::close);
-                    Mono<Void> proxyClose = session.closeStatus().filter(it -> proxySocketSession.isOpen())
+                    Mono<Void> proxyClose = session.closeStatus().defaultIfEmpty(CloseStatus.GOING_AWAY).filter(it -> proxySocketSession.isOpen())
                         .map(WebSocketPlugin::adaptCloseStatus).flatMap(proxySocketSession::close);
                     // Use retain() for Reactor Netty
                     Mono<Void> proxySessionSend = proxySocketSession
@@ -319,8 +323,7 @@ public class WebSocketPlugin extends AbstractShenyuPlugin {
                     Mono<Void> serverSessionSend = session.send(
                         proxySocketSession.receive().doOnNext(WebSocketMessage::retain));
                     // Ensure closeStatus from one propagates to the other
-                    Mono.when(serverClose, proxyClose).subscribe();
-                    return Mono.zip(proxySessionSend, serverSessionSend).then();
+                    return Mono.when(serverClose, proxyClose, proxySessionSend, serverSessionSend);
                 }
 
                 @NonNull
@@ -328,7 +331,7 @@ public class WebSocketPlugin extends AbstractShenyuPlugin {
                 public List<String> getSubProtocols() {
                     return ShenyuWebSocketHandler.this.subProtocols;
                 }
-            });
+            }).contextWrite(context -> context.put(WebSocketRuleHandle.class, ruleHandle));
         }
     }
 }

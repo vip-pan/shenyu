@@ -19,6 +19,7 @@ package org.apache.shenyu.common.dto.convert.rule.impl;
 
 import com.google.common.collect.ImmutableSet;
 import org.apache.shenyu.common.enums.LoadBalanceEnum;
+import org.apache.shenyu.common.utils.GsonUtils;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -51,4 +52,17 @@ public class WebSocketRuleHandleTest {
         assertThat(ImmutableSet.of(handle1, handle2), hasSize(1));
     }
     
+    @Test
+    public void testLegacyTimeoutFallbackAndRoundTrip() {
+        WebSocketRuleHandle legacy = GsonUtils.getInstance().fromJson("{\"timeout\":5000}", WebSocketRuleHandle.class);
+        assertThat(legacy.getTimeout(), is(5000L));
+        assertThat(legacy.getIdleTimeout(), is(0L));
+        legacy.setTimeout(1000L);
+        legacy.setIdleTimeout(60000L);
+        WebSocketRuleHandle restored = GsonUtils.getInstance().fromJson(GsonUtils.getInstance().toJson(legacy), WebSocketRuleHandle.class);
+        assertThat(restored.getTimeout(), is(1000L));
+        assertThat(restored.getIdleTimeout(), is(60000L));
+        assertThat(restored, is(legacy));
+    }
+
 }

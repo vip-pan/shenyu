@@ -256,9 +256,9 @@ public class WebSocketPluginTest {
         Class<?> cla = clazz[0];
         Method method = cla.getDeclaredMethod("getSubProtocols");
         method.setAccessible(true);
-        Constructor declaredConstructor = cla.getDeclaredConstructor(URI.class, WebSocketClient.class, HttpHeaders.class, List.class);
+        Constructor declaredConstructor = cla.getDeclaredConstructor(URI.class, WebSocketClient.class, HttpHeaders.class, List.class, WebSocketRuleHandle.class);
         declaredConstructor.setAccessible(true);
-        Object obj = declaredConstructor.newInstance(null, null, null, null);
+        Object obj = declaredConstructor.newInstance(null, null, null, null, new WebSocketRuleHandle());
         List<String> list = (List<String>) method.invoke(obj);
         assertTrue(list.isEmpty());
     }
